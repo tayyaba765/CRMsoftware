@@ -1,0 +1,85 @@
+composer create-project laravel/laravel .
+php artisan serve
+
+
+composer require spatie/laravel-permission
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+php artisan migrate
+composer require yajra/laravel-datatables-oracle
+php artisan vendor:publish --tag=datatables
+
+
+php artisan make:model Property -m
+php artisan migrate
+
+
+simplest methd for 'providers' => [
+
+	....
+
+	Spatie\Permission\PermissionServiceProvider::class,
+
+],
+
+
+is this
+
+We can also custom changes on Spatie package, so if you also want to changes then you can fire bellow command and get config file in config/permission.php and migration files.
+
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+
+Now you can see permission.php file and one migrations. so you can run migration using following command:
+
+php artisan migrate
+
+
+
+
+ C:\Users\Maaz-05\Desktop\SEPT24\SEPT24> php artisan db:seed --class=PermissionSeeder
+
+   INFO  Seeding database.
+
+  Database\Seeders\PermissionSeeder ........................................................................................................ RUNNING
+  Database\Seeders\PermissionSeeder .................................................................................................... 267 ms DONE
+
+PS C:\Users\Maaz-05\Desktop\SEPT24\SEPT24> php artisan db:seed --class=ModuleRoleSeeder
+
+
+
+# Fresh migration + seed
+php artisan migrate:fresh --seed
+
+# Or run individually
+php artisan db:seed --class=PermissionSeeder
+php artisan db:seed --class=ModuleRoleSeeder
+
+
+modules
+id	name
+1	School
+2	Staff
+3	External
+roles
+id	name	module_id	parent_role_id
+1	super-admin	1	NULL
+2	school-admin	1	1
+3	principal	2	2
+4	teacher	2	3
+5	admin	2	2
+6	parent	3	2
+7	student	3	2
+
+
+
+
+use App\Models\User;
+
+$user = User::create([
+    'name' => 'Ali',
+    'email' => 'ali@example.com',
+    'password' => bcrypt('password'),
+]);
+
+$user->assignRole(['teacher', 'admin']);
+
+

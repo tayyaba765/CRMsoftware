@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+    public function register(Request $request)
+    {
+
+     logger('Registration request received for email: ' . $request->email);
+logger('Registration request received for email: ' . $request->name);
+logger('Registration request received for email: ' . $request->pasword);
+        $data = $request->validate([
+            'name' => 'required|string|max:105',
+            'email' => 'required|email|unique:users,email|max:255',
+            'password' => 'required|min:8|string|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ]);
+         logger('Registration request received for email: ' . $user->email);
+logger('Registration request received for email: ' . $user->name);
+logger('Registration request received for email: ' . $user->pasword);
+        $user->assignRole('user');
+        Auth::login($user);
+        $request->session()->regenerate(); //essential for login
+
+        return redirect()->intended(route('dashboard'))
+        ->with('success','Registration successful');
+    }
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'password' => 'required',
+            'email' => 'required|email',
+        ]);
+//instead of $remember use $request->boolean('remember') as it converts to t/f
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()
+                ->withErrors(['email' => 'those credentials not match our records'])
+                ->onlyInput('email');
+        }
+        $request->session()->regenerate();//secure the session
+        return redirect()->intended(route('dashboard'));
+    }
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate(); //clears session datat
+        $request->session()->regenerateToken(); //refreshes csrf token
+
+        //redirect('/login') is less sustainable hard coded
+        //and redirect()->route('login') is redirect to anyother code with 
+        //route name 'login' the redirects to login 
+        //redirect('/login')  redirect()->route('login')
+        return redirect()->route('login');
+    }
+}
